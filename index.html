@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>General Knowledge Quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Poppins, Arial;
+            height: 100vh;
+            background:
+                linear-gradient(120deg, rgba(0, 0, 0, .6), rgba(0, 0, 0, .4)),
+                url("images/quiz.png");
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* DOUBLE COLORFUL BORDER */
+        .quiz-container {
+            position: relative;
+            background: linear-gradient(135deg, #fff, #f3f7ff);
+            width: 95%;
+            max-width: 700px;
+            border-radius: 34px;
+            padding: 36px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .quiz-container::before {
+            content: "";
+            position: absolute;
+            inset: -6px;
+            border-radius: 40px;
+            background: linear-gradient(45deg, #ff00cc, #3333ff, #00ffcc, #ff9900, #ff00cc);
+            z-index: -2;
+            animation: spin 8s linear infinite;
+        }
+
+        .quiz-container::after {
+            content: "";
+            position: absolute;
+            inset: -16px;
+            border-radius: 46px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc, #ff416c, #ff9800);
+            z-index: -3;
+            filter: blur(18px);
+            opacity: .9;
+        }
+
+        @keyframes spin {
+            to {
+                filter: hue-rotate(360deg)
+            }
+        }
+
+        /* TITLE */
+        .title-text {
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 32px
+        }
+
+        .timer {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff3d3d
+        }
+
+        .score {
+            font-size: 18px;
+            color: #2575fc
+        }
+
+        .question {
+            font-size: 22px;
+            margin: 18px 0;
+            font-weight: 600
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .option-btn {
+            padding: 14px;
+            font-size: 16px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            background: #d6b7ec;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, .12);
+            transition: .2s;
+        }
+
+        .option-btn:hover {
+            transform: scale(1.03)
+        }
+
+        .correct {
+            background: linear-gradient(45deg, #00c853, #64dd17) !important;
+            color: #fff;
+        }
+
+        .wrong {
+            background: linear-gradient(45deg, #d50000, #ff1744) !important;
+            color: #fff;
+        }
+
+        button.next {
+            margin-top: 22px;
+            background: linear-gradient(45deg, #ff9800, #ff5722);
+            border: none;
+            color: rgb(255, 255, 252);
+            padding: 14px 40px;
+            border-radius: 40px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* WIN SCREEN */
+        .win-screen {
+            color: #fff;
+            text-align: center
+        }
+
+        .trophy {
+            font-size: 130px;
+            animation: glow 1.5s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px gold
+            }
+
+            to {
+                text-shadow: 0 0 60px gold, 0 0 100px orange
+            }
+        }
+
+        /* CRACKERS */
+        .cracker {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: gold;
+            border-radius: 50%;
+            animation: burst 1.2s infinite;
+        }
+
+        .c1 {
+            top: 20%;
+            left: 20%
+        }
+
+        .c2 {
+            top: 60%;
+            left: 70%
+        }
+
+        .c3 {
+            top: 40%;
+            left: 50%
+        }
+
+        .c4 {
+            top: 30%;
+            left: 50%
+        }
+
+        .c5 {
+            top: 70%;
+            left: 30%
+        }
+
+        .c6 {
+            top: 20%;
+            left: 50%
+        }
+
+        @keyframes burst {
+            from {
+                transform: scale(1);
+                opacity: 1
+            }
+
+            to {
+                transform: scale(18);
+                opacity: 0
+            }
+        }
+
+        /* 🎮 RESTART BUTTON */
+        .restart-btn {
+            margin-top: 20px;
+            padding: 14px 42px;
+            font-size: 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            color: white;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .4);
+            transition: .3s;
+        }
+
+        .restart-btn:hover {
+            transform: scale(1.08);
+            background: linear-gradient(45deg, #0072ff, #00c6ff);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- AUDIO -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="sounds/game-music-loop-4-144341.mp3">
+    </audio>
+    <audio id="tickSound" preload="auto">
+        <source src="sounds/10sec-digital-countdown-sfx-319873.mp3">
+    </audio>
+    <audio id="correctSound" preload="auto">
+        <source src="sounds/the-correct-answer-33-183620.mp3">
+    </audio>
+    <audio id="wrongSound" preload="auto">
+        <source src="sounds/buzzer-or-wrong-answer-20582.mp3">
+    </audio>
+    <audio id="winMusic" preload="auto" playsinline>
+        <source src="sounds/cracker-sound-261119.mp3">
+    </audio>
+
+    <div class="quiz-container">
+        <h1>🧠 <span class="title-text">GK Quiz</span></h1>
+        <div class="timer" id="timer">⏱️ 10</div>
+        <div class="score" id="score">Score: 0</div>
+        <div class="question" id="question"></div>
+        <div class="options" id="options"></div>
+        <button class="next" onclick="nextQuestion()">Next ➡️</button>
+    </div>
+
+    <script>
+        const quizData = [ /* 20 QUESTIONS SAME AS BEFORE */
+            { q: "Capital of India?", o: ["Mumbai", "New Delhi", "Kolkata", "Chennai"], a: "New Delhi" },
+            { q: "Red Planet?", o: ["Earth", "Mars", "Jupiter", "Venus"], a: "Mars" },
+            { q: "Father of Nation (India)?", o: ["Nehru", "Gandhi", "Bose", "Patel"], a: "Gandhi" },
+            { q: "Largest ocean?", o: ["Indian", "Atlantic", "Pacific", "Arctic"], a: "Pacific" },
+            { q: "Gas plants absorb?", o: ["Oxygen", "CO2", "Nitrogen", "Hydrogen"], a: "CO2" },
+            { q: "Inventor of Telephone?", o: ["Alexander Graham Bell", "Edison", "Tesla", "Newton"], a: "Alexander Graham Bell" },
+            { q: "National animal of India?", o: ["Lion", "Elephant", "Tiger", "Horse"], a: "Tiger" },
+            { q: "Smallest continent?", o: ["Europe", "Australia", "Africa", "Antarctica"], a: "Australia" },
+            { q: "Boiling point of water?", o: ["90°C", "100°C", "110°C", "120°C"], a: "100°C" },
+            { q: "Author of Ramayana?", o: ["Valmiki", "Vyasa", "Kalidas", "Tulsidas"], a: "Valmiki" },
+            { q: "Fastest land animal?", o: ["Horse", "Lion", "Cheetah", "Dog"], a: "Cheetah" },
+            { q: "National flower?", o: ["Rose", "Lotus", "Lily", "Sunflower"], a: "Lotus" },
+            { q: "Largest planet?", o: ["Earth", "Mars", "Jupiter", "Saturn"], a: "Jupiter" },
+            { q: "First PM of India?", o: ["Nehru", "Gandhi", "Patel", "Bose"], a: "Nehru" },
+            { q: "Liquid metal?", o: ["Iron", "Gold", "Mercury", "Silver"], a: "Mercury" },
+            { q: "Number of continents?", o: ["5", "6", "7", "8"], a: "7" },
+            { q: "Festival of lights?", o: ["Holi", "Diwali", "Eid", "Christmas"], a: "Diwali" },
+            { q: "Blood pumping organ?", o: ["Brain", "Heart", "Lungs", "Kidney"], a: "Heart" },
+            { q: "Currency of Japan?", o: ["Dollar", "Yen", "Won", "Ruble"], a: "Yen" },
+            { q: "Most spoken language?", o: ["English", "Hindi", "Spanish", "Mandarin"], a: "English" }
+        ];
+
+        let index = 0, score = 0, time = 10, timerInterval;
+        let audioUnlocked = false;
+
+        const bgMusic = document.getElementById("bgMusic");
+        const winMusic = document.getElementById("winMusic");
+        const tickSound = document.getElementById("tickSound");
+        const correctSound = document.getElementById("correctSound");
+        const wrongSound = document.getElementById("wrongSound");
+
+        const questionEl = document.getElementById("question");
+        const optionsEl = document.getElementById("options");
+        const timerEl = document.getElementById("timer");
+        const scoreEl = document.getElementById("score");
+
+        document.body.addEventListener("click", () => {
+            if (!audioUnlocked) {
+                bgMusic.play().then(() => bgMusic.pause());
+                winMusic.play().then(() => winMusic.pause());
+                audioUnlocked = true;
+            }
+        }, { once: true });
+
+        function loadQ() {
+            if (audioUnlocked && bgMusic.paused) {
+                bgMusic.volume = .4;
+                bgMusic.play();
+            }
+
+            questionEl.innerText = quizData[index].q;
+            optionsEl.innerHTML = "";
+
+            quizData[index].o.forEach(x => {
+                const b = document.createElement("button");
+                b.className = "option-btn";
+                b.innerText = x;
+                b.onclick = () => check(b, x);
+                optionsEl.appendChild(b);
+            });
+
+            time = 10;
+            timerEl.innerText = "⏱️ " + time;
+
+            timerInterval = setInterval(() => {
+                if (time <= 5) tickSound.play();
+                time--;
+                timerEl.innerText = "⏱️ " + time;
+                if (time === 0) {
+                    clearInterval(timerInterval);
+                    showCorrect();
+                }
+            }, 1000);
+        }
+
+        function check(btn, val) {
+            clearInterval(timerInterval);
+            document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+
+            if (val === quizData[index].a) {
+                btn.classList.add("correct");
+                correctSound.play();
+                score++;
+            } else {
+                btn.classList.add("wrong");
+                wrongSound.play();
+                showCorrect();
+            }
+            scoreEl.innerText = "Score: " + score;
+        }
+
+        function showCorrect() {
+            document.querySelectorAll(".option-btn").forEach(b => {
+                if (b.innerText === quizData[index].a) b.classList.add("correct");
+            });
+        }
+
+        function nextQuestion() {
+            index++;
+            if (index < quizData.length) {
+                loadQ();
+            } else {
+                bgMusic.pause();
+                winMusic.currentTime = 0;
+                winMusic.play();
+                document.body.innerHTML = `
+<div class="win-screen">
+<div class="cracker c1"></div><div class="cracker c2"></div>
+<div class="cracker c3"></div><div class="cracker c4"></div>
+<div class="cracker c5"></div><div class="cracker c6"></div>
+<div class="trophy">🏆</div>
+<h1>YOU WIN!</h1>
+<h2>Score: ${score}/${quizData.length}</h2>
+<button class="restart-btn" onclick="location.reload()">🎮 Restart</button>
+</div>`;
+            }
+        }
+
+        loadQ();
+    </script>
+
+</body>
+
+</html>
